@@ -67,7 +67,7 @@ module Sysinfo
       new.cpus
     end
 
-    {% for attr in { :initr, :softirq } %}
+    {% for attr in { :intr, :softirq } %}
 
     # The text for the "{{ attr.id }}" attribute of an existing stat instance.
     def {{ attr.id }}
