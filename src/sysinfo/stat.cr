@@ -1,6 +1,12 @@
 module Sysinfo
+  # Data read from /proc/stat. See `man 5 proc` on a Linux system.
   class Stat
-
+    property data : String
+    def initialize(@data)
+    end
+    def initialize
+        @data = File.read "/proc/stat"
+    end
     alias CPU = NamedTuple(
       user: Int32,
       nice: Int32,
@@ -14,10 +20,31 @@ module Sysinfo
       guest_nice: Int32
     )
 
-    def self.cpus
+    # A chainable method which forces the data to be reread from the file
+    # before calling an output method. E.G.:
+    #
+    # ```
+    #   stat = Stat.new
+    #   puts stat.processes
+    #   puts stat.cpus
+    #   loop do
+    #     sleep 2.seconds
+    #     puts stat.read.processes
+    #     #         ^^ forces stats to be reread
+    #     puts stat.cpus
+    #   end
+    # ```
+    #
+    # this allows refreshing the data without reallocating a new object.
+    def read
+        @data = File.read "/proc/stat"
+    end
+
+    # An array of CPUs from an existing stat instance.
+    def cpus
       data = File.read("/proc/stat")
       cpucount = 0
-      cpus = {} of Int32 => CPU
+      cpus = [] of CPU
       data.scan(/cpu\d\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/) do |matches|
         cpu = {
           user: matches[1].to_i,
@@ -37,40 +64,24 @@ module Sysinfo
       cpus
     end
 
-    def self.initr
-      data = File.read("/proc/stat")
-      data.scan(/intr\s(.*)/)[0][1]
+    # An array of CPUs from a new stat instance.
+    def self.cpus
+      new.cpus
     end
 
-    def self.ctxt
-      data = File.read("/proc/stat")
-      data.scan(/ctxt\s(.*)/)[0][1].to_i
+    {% for attr in { :initr, :ctxt, :btime, :processes, :procs_running, :procs_blocked, :softirq } %}
+
+    # The text for the "{{ attr.id }}" attribute of an existing stat instance.
+    def {{ attr.id }}
+        data.scan(/{{ attr.id }}\s(.*)/)[0][1]
     end
 
-    def self.btime
-      data = File.read("/proc/stat")
-      data.scan(/btime\s(.*)/)[0][1].to_i
+    # The text for the "{{ attr.id }}" attribute of a new stat instance.
+    def self.{{ attr.id }}
+        new.{{ attr.id }}
     end
 
-    def self.processes
-      data = File.read("/proc/stat")
-      data.scan(/processes\s(.*)/)[0][1].to_i
-    end
-
-    def self.procs_running
-      data = File.read("/proc/stat")
-      data.scan(/procs_running\s(.*)/)[0][1].to_i
-    end
-
-    def self.procs_blocked
-      data = File.read("/proc/stat")
-      data.scan(/procs_blocked\s(.*)/)[0][1].to_i
-    end
-
-    def self.softirq
-      data = File.read("/proc/stat")
-      data.scan(/softirq\s(.*)/)[0][1]
-    end
+    {% end  %}
 
   end
 end
