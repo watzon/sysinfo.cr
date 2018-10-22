@@ -43,7 +43,6 @@ module Sysinfo
     # An array of CPUs from an existing stat instance.
     def cpus
       data = File.read("/proc/stat")
-      cpucount = 0
       cpus = [] of CPU
       data.scan(/cpu\d\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/) do |matches|
         cpu = {
@@ -58,8 +57,7 @@ module Sysinfo
           guest: matches[9].to_i,
           guest_nice: matches[10].to_i,
         }
-        cpus[cpucount] = cpu
-        cpucount += 1
+        cpus << cpu
       end
       cpus
     end
@@ -69,11 +67,11 @@ module Sysinfo
       new.cpus
     end
 
-    {% for attr in { :initr, :ctxt, :btime, :processes, :procs_running, :procs_blocked, :softirq } %}
+    {% for attr in { :initr, :softirq } %}
 
     # The text for the "{{ attr.id }}" attribute of an existing stat instance.
     def {{ attr.id }}
-        data.scan(/{{ attr.id }}\s(.*)/)[0][1]
+        data.scan(/{{ attr.id }}\s(.*)/)[0][1].split.map &.to_i
     end
 
     # The text for the "{{ attr.id }}" attribute of a new stat instance.
@@ -82,6 +80,18 @@ module Sysinfo
     end
 
     {% end  %}
+    {% for attr in { :ctxt, :btime, :processes, :procs_running, :procs_blocked } %}
 
+    # The text for the "{{ attr.id }}" attribute of an existing stat instance.
+    def {{ attr.id }}
+        data.scan(/{{ attr.id }}\s(.*)/)[0][1].to_i
+    end
+
+    # The text for the "{{ attr.id }}" attribute of a new stat instance.
+    def self.{{ attr.id }}
+        new.{{ attr.id }}
+    end
+
+    {% end  %}
   end
 end
