@@ -1,6 +1,8 @@
 module Sysinfo
-  class CGroups
+  class CGroups < Info
     class CGroupsException < Exception; end
+
+    getter location = "/proc/cgroups"
 
     ATTRIBUTES = [
       "cpuset",
@@ -18,9 +20,16 @@ module Sysinfo
     ]
 
     {% for attribute in ATTRIBUTES %}
+      # returns a NamedTuple of { heirarchy, num_cgroups, enabled } for the
+      # {{ attribute }} cgroups field, from a new read of /proc/cgroups
       def self.{{ attribute.id }}
-        data = File.read("/proc/cgroups")
-        regex_match({{ attribute }}, data)
+        regex_match({{ attribute }}, new.data)
+      end
+
+      # returns a NamedTuple of { heirarchy, num_cgroups, enabled } for the
+      # {{ attribute }} cgroups field, from an existing read of /proc/cgroups
+      def {{attribute.id}}
+        regex_match {{ attribute }}, data
       rescue exception
         raise CGroupsException.new exception.message
       end

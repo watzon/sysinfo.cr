@@ -1,9 +1,7 @@
 module Sysinfo
   class Meminfo < Info
 
-    def location
-      "/proc/meminfo"
-    end
+    getter location = "/proc/meminfo"
 
     class MeminfoException < Exception; end
 
