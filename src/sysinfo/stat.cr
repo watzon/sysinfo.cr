@@ -1,12 +1,8 @@
 module Sysinfo
   # Data read from /proc/stat. See `man 5 proc` on a Linux system.
-  class Stat
-    property data : String
-    def initialize(@data)
-    end
-    def initialize
-        @data = File.read "/proc/stat"
-    end
+  class Stat < Info
+    getter location = "/proc/stat"
+
     alias CPU = NamedTuple(
       user: Int32,
       nice: Int32,
@@ -19,26 +15,6 @@ module Sysinfo
       guest: Int32,
       guest_nice: Int32
     )
-
-    # A chainable method which forces the data to be reread from the file
-    # before calling an output method. E.G.:
-    #
-    # ```
-    #   stat = Stat.new
-    #   puts stat.processes
-    #   puts stat.cpus
-    #   loop do
-    #     sleep 2.seconds
-    #     puts stat.read.processes
-    #     #         ^^ forces stats to be reread
-    #     puts stat.cpus
-    #   end
-    # ```
-    #
-    # this allows refreshing the data without reallocating a new object.
-    def read
-        @data = File.read "/proc/stat"
-    end
 
     # An array of CPUs from an existing stat instance.
     def cpus
