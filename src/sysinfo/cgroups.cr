@@ -1,8 +1,10 @@
+require "./info"
+
 module Sysinfo
   class CGroups < Info
     class CGroupsException < Exception; end
 
-    getter location = "/proc/cgroups"
+    getter location : String = "/proc/cgroups"
 
     ATTRIBUTES = [
       "cpuset",
@@ -16,7 +18,7 @@ module Sysinfo
       "perf_event",
       "net_prio",
       "pids",
-      "rdma"
+      "rdma",
     ]
 
     {% for attribute in ATTRIBUTES %}
@@ -39,13 +41,12 @@ module Sysinfo
       regex = Regex.new("#{attribute}\\s+(.*?)\\s+(.*?)\\s+(.*?)\\s")
       if match = regex.match(data)
         return {
-          hierarchy: match[1]? ? match[1].to_i : nil,
-          num_cgroups: match[2]? ? match[2].to_i : nil,
-          enabled: match[3]? ? match[3].to_i : nil
+          hierarchy:   match[1]? ? match[1].to_i64 : nil,
+          num_cgroups: match[2]? ? match[2].to_i64 : nil,
+          enabled:     match[3]? ? match[3].to_i64 : nil,
         }
       end
-      { hierarchy: nil, num_cgroups: nil, enabled: nil }
+      {hierarchy: nil, num_cgroups: nil, enabled: nil}
     end
-
   end
 end

@@ -2,7 +2,6 @@ require "./sysinfo/*"
 
 # TODO: Write documentation for `Stat`
 module Sysinfo
-
   def self.cgroups
     CGroups
   end
@@ -24,12 +23,11 @@ module Sysinfo
     ["uptime", "idle"].zip(uptimes).to_h
   end
 
-  def self.process(pid : Int32)
+  def self.process(pid : Int64)
     Process.new(pid)
   end
 
   private def self.read_file(filename : String)
     File.read(File.join("/proc", filename)).strip
   end
-
 end

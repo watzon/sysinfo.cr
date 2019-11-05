@@ -1,7 +1,6 @@
 module Sysinfo
   class Meminfo < Info
-
-    getter location = "/proc/meminfo"
+    getter location : String = "/proc/meminfo"
 
     class MeminfoException < Exception; end
 
@@ -44,7 +43,7 @@ module Sysinfo
       anonhugepages:     "AnonHugePages",
       directmap4k:       "DirectMap4k",
       directmap2m:       "DirectMap2M",
-      directmap1g:       "DirectMap1G"
+      directmap1g:       "DirectMap1G",
     }
 
     {% for attribute, regex_str in ATTRIBUTES %}
@@ -62,7 +61,7 @@ module Sysinfo
     private def self.regex_match(attribute, data)
       regex = Regex.new("#{ATTRIBUTES[attribute]}:\\s*(.*?)\\s")
       if match = regex.match(data)
-        return match[1].to_i if match.size > 0
+        return match[1].to_i64 if match.size > 0
       end
       nil
     end
