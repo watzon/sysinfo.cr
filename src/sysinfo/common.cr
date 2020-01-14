@@ -41,5 +41,10 @@ module SysInfo
       C.sysinfo(sysinfo_ptr)
       sysinfo_ptr.value
     end
+
+    def self.read_ints(filename)
+      lines = File.read_lines(filename)
+      lines.map(&.strip.to_i64)
+    end
   end
 end
