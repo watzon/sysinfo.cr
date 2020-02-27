@@ -1,4 +1,5 @@
 require "json"
+require "subnet"
 require "./network/*"
 
 module SysInfo

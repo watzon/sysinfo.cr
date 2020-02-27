@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  subnet:
+    github: watzon/subnet
+    commit: f754104cdfc1872ca66f469801fd3f2e8739e2a9
+
